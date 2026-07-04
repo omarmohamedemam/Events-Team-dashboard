@@ -44,23 +44,27 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
+  try {
+    const body = await req.json();
 
-  const event = await prisma.event.create({
-    data: {
-      eventName: body.eventName,
-      clientName: body.clientName || null,
-      eventType: body.eventType || "school",
-      eventDate: new Date(body.eventDate),
-      location: body.location || null,
-      expectedKids: body.expectedKids ? Number(body.expectedKids) : null,
-      actualKids: body.actualKids ? Number(body.actualKids) : null,
-      requiredTeamCount: body.requiredTeamCount ? Number(body.requiredTeamCount) : null,
-      eventManagerId: body.eventManagerId || null,
-      status: body.status || "planned",
-      notes: body.notes || null,
-    },
-  });
+    const event = await prisma.event.create({
+      data: {
+        eventName: body.eventName,
+        clientName: body.clientName || null,
+        eventType: body.eventType || "school",
+        eventDate: new Date(body.eventDate),
+        location: body.location || null,
+        expectedKids: body.expectedKids ? Number(body.expectedKids) : null,
+        actualKids: body.actualKids ? Number(body.actualKids) : null,
+        requiredTeamCount: body.requiredTeamCount ? Number(body.requiredTeamCount) : null,
+        eventManagerId: body.eventManagerId || null,
+        status: body.status || "planned",
+        notes: body.notes || null,
+      },
+    });
 
-  return NextResponse.json(event, { status: 201 });
+    return NextResponse.json(event, { status: 201 });
+  } catch {
+    return NextResponse.json({ error: "Database is unavailable. Start Postgres and run migrations." }, { status: 503 });
+  }
 }

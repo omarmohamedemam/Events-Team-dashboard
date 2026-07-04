@@ -21,6 +21,7 @@ export default function TeamClient() {
   const [members, setMembers] = useState<Member[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   async function load() {
     setLoading(true);
@@ -37,12 +38,17 @@ export default function TeamClient() {
   }, []);
 
   async function create(form: FormData) {
+    setError("");
     const body = Object.fromEntries(form);
     body.arSupport = form.get("arSupport") === "on" ? "true" : "";
     body.vrSupport = form.get("vrSupport") === "on" ? "true" : "";
     body.languages = String(form.get("languages") || "").split(",").map((x) => x.trim()).filter(Boolean).join(",");
     const res = await fetch("/api/team", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...body, languages: String(body.languages).split(",").filter(Boolean) }) });
-    if (!res.ok) return false;
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error || "Could not save member.");
+      return false;
+    }
     await load();
     return true;
   }
@@ -77,6 +83,7 @@ export default function TeamClient() {
       <section className="card">
         <div className="card-header"><div className="card-header-left"><h2>Add member</h2><p>Existing GMind IDs are preserved.</p></div></div>
         <form className="card-body form-grid form-grid-1" onSubmit={async (e) => { e.preventDefault(); const form = e.currentTarget; if (await create(new FormData(form))) form.reset(); }}>
+          {error && <div className="alert alert-error">{error}</div>}
           <div className="field"><label>Full name</label><input name="fullName" required /></div>
           <div className="field"><label>GMind ID</label><input name="gmindId" /></div>
           <div className="field"><label>Phone</label><input name="phone" /></div>

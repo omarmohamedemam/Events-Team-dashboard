@@ -16,6 +16,7 @@ type Event = {
 export default function EventsClient() {
   const [events, setEvents] = useState<Event[]>([]);
   const [search, setSearch] = useState("");
+  const [error, setError] = useState("");
 
   async function load() {
     const res = await fetch(`/api/events?search=${encodeURIComponent(search)}`);
@@ -29,12 +30,17 @@ export default function EventsClient() {
   }, []);
 
   async function create(form: FormData) {
+    setError("");
     const res = await fetch("/api/events", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(Object.fromEntries(form)),
     });
-    if (!res.ok) return false;
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error || "Could not save event.");
+      return false;
+    }
     await load();
     return true;
   }
@@ -68,6 +74,7 @@ export default function EventsClient() {
       <section className="card">
         <div className="card-header"><div className="card-header-left"><h2>Create event</h2><p>Then assign team from the workflow pages.</p></div></div>
         <form className="card-body form-grid form-grid-1" onSubmit={async (e) => { e.preventDefault(); const form = e.currentTarget; if (await create(new FormData(form))) form.reset(); }}>
+          {error && <div className="alert alert-error">{error}</div>}
           <div className="field"><label>Event name</label><input name="eventName" required /></div>
           <div className="field"><label>Client</label><input name="clientName" /></div>
           <div className="field"><label>Date</label><input type="date" name="eventDate" required /></div>

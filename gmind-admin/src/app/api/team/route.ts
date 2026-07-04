@@ -53,40 +53,43 @@ export async function GET(req: NextRequest) {
 
 // POST /api/team — create a team member
 export async function POST(req: NextRequest) {
-  const body = await req.json();
+  try {
+    const body = await req.json();
 
-  // Check duplicate GMind ID
-  if (body.gmindId) {
-    const existing = await prisma.teamMember.findUnique({ where: { gmindId: body.gmindId } });
-    if (existing) {
-      return NextResponse.json({ error: "GMind ID already exists" }, { status: 409 });
+    if (body.gmindId) {
+      const existing = await prisma.teamMember.findUnique({ where: { gmindId: body.gmindId } });
+      if (existing) {
+        return NextResponse.json({ error: "GMind ID already exists" }, { status: 409 });
+      }
     }
+
+    const member = await prisma.teamMember.create({
+      data: {
+        gmindId: body.gmindId || null,
+        fullName: body.fullName,
+        phone: body.phone || null,
+        email: body.email || null,
+        dateOfBirth: body.dateOfBirth ? new Date(body.dateOfBirth) : null,
+        schoolOrFaculty: body.schoolOrFaculty || "unknown",
+        schoolOrFacultyName: body.schoolOrFacultyName || null,
+        nationality: body.nationality || null,
+        governorate: body.governorate || null,
+        address: body.address || null,
+        socialMediaLink: body.socialMediaLink || null,
+        personalPhotoUrl: body.personalPhotoUrl || null,
+        teamType: body.teamType || "internal",
+        mainRole: body.mainRole || "facilitator",
+        status: body.status || "active",
+        arSupport: !!body.arSupport,
+        vrSupport: !!body.vrSupport,
+        languages: body.languages || [],
+        startDate: body.startDate ? new Date(body.startDate) : null,
+        notes: body.notes || null,
+      },
+    });
+
+    return NextResponse.json(member, { status: 201 });
+  } catch {
+    return NextResponse.json({ error: "Database is unavailable. Start Postgres and run migrations." }, { status: 503 });
   }
-
-  const member = await prisma.teamMember.create({
-    data: {
-      gmindId: body.gmindId || null,
-      fullName: body.fullName,
-      phone: body.phone || null,
-      email: body.email || null,
-      dateOfBirth: body.dateOfBirth ? new Date(body.dateOfBirth) : null,
-      schoolOrFaculty: body.schoolOrFaculty || "unknown",
-      schoolOrFacultyName: body.schoolOrFacultyName || null,
-      nationality: body.nationality || null,
-      governorate: body.governorate || null,
-      address: body.address || null,
-      socialMediaLink: body.socialMediaLink || null,
-      personalPhotoUrl: body.personalPhotoUrl || null,
-      teamType: body.teamType || "internal",
-      mainRole: body.mainRole || "facilitator",
-      status: body.status || "active",
-      arSupport: !!body.arSupport,
-      vrSupport: !!body.vrSupport,
-      languages: body.languages || [],
-      startDate: body.startDate ? new Date(body.startDate) : null,
-      notes: body.notes || null,
-    },
-  });
-
-  return NextResponse.json(member, { status: 201 });
 }
