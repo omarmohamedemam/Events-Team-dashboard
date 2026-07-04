@@ -4,10 +4,6 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { calcEvaluationTotals, calcSalary } from "@/lib/utils";
 
-function currentUserId() {
-  return undefined;
-}
-
 function text(form: FormData, key: string) {
   const value = form.get(key);
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
@@ -19,10 +15,11 @@ function money(form: FormData, key: string, fallback = 0) {
 }
 
 export async function assignMember(form: FormData) {
-  currentUserId();
-  const eventId = text(form, "eventId")!;
+  const eventId = text(form, "eventId");
+  const teamMemberId = text(form, "teamMemberId");
+  if (!eventId || !teamMemberId) return;
   await prisma.eventAssignment.upsert({
-    where: { eventId_teamMemberId: { eventId, teamMemberId: text(form, "teamMemberId")! } },
+    where: { eventId_teamMemberId: { eventId, teamMemberId } },
     update: {
       assignedRole: text(form, "assignedRole") as never,
       plannedRate: money(form, "plannedRate"),
@@ -30,7 +27,7 @@ export async function assignMember(form: FormData) {
     },
     create: {
       eventId,
-      teamMemberId: text(form, "teamMemberId")!,
+      teamMemberId,
       assignedRole: (text(form, "assignedRole") || "facilitator") as never,
       plannedRate: money(form, "plannedRate"),
     },
@@ -39,9 +36,9 @@ export async function assignMember(form: FormData) {
 }
 
 export async function saveAttendance(form: FormData) {
-  const userId = currentUserId();
-  const eventId = text(form, "eventId")!;
-  const teamMemberId = text(form, "teamMemberId")!;
+  const eventId = text(form, "eventId");
+  const teamMemberId = text(form, "teamMemberId");
+  if (!eventId || !teamMemberId) return;
   await prisma.attendance.upsert({
     where: { eventId_teamMemberId: { eventId, teamMemberId } },
     update: {
@@ -49,7 +46,6 @@ export async function saveAttendance(form: FormData) {
       arrivalTime: text(form, "arrivalTime"),
       leavingTime: text(form, "leavingTime"),
       attendanceNote: text(form, "attendanceNote"),
-      markedByUserId: userId,
     },
     create: {
       eventId,
@@ -58,16 +54,15 @@ export async function saveAttendance(form: FormData) {
       arrivalTime: text(form, "arrivalTime"),
       leavingTime: text(form, "leavingTime"),
       attendanceNote: text(form, "attendanceNote"),
-      markedByUserId: userId,
     },
   });
   revalidatePath("/attendance");
 }
 
 export async function saveEvaluation(form: FormData) {
-  const userId = currentUserId();
-  const eventId = text(form, "eventId")!;
-  const teamMemberId = text(form, "teamMemberId")!;
+  const eventId = text(form, "eventId");
+  const teamMemberId = text(form, "teamMemberId");
+  if (!eventId || !teamMemberId) return;
   const scores = {
     punctualityCommitment: Math.min(money(form, "punctualityCommitment"), 3),
     taskFocusResponsibility: Math.min(money(form, "taskFocusResponsibility"), 3),
@@ -84,15 +79,15 @@ export async function saveEvaluation(form: FormData) {
   const totals = calcEvaluationTotals(scores);
   await prisma.evaluation.upsert({
     where: { eventId_teamMemberId: { eventId, teamMemberId } },
-    update: { ...scores, ...totals, generalNotes: text(form, "generalNotes"), evaluatorUserId: userId },
-    create: { eventId, teamMemberId, ...scores, ...totals, generalNotes: text(form, "generalNotes"), evaluatorUserId: userId },
+    update: { ...scores, ...totals, generalNotes: text(form, "generalNotes") },
+    create: { eventId, teamMemberId, ...scores, ...totals, generalNotes: text(form, "generalNotes") },
   });
   revalidatePath("/evaluations");
 }
 
 export async function generateSalaries(form: FormData) {
-  currentUserId();
-  const eventId = text(form, "eventId")!;
+  const eventId = text(form, "eventId");
+  if (!eventId) return;
   const event = await prisma.event.findUnique({
     where: { id: eventId },
     include: { assignments: true, attendances: true, evaluations: true },
@@ -119,8 +114,8 @@ export async function generateSalaries(form: FormData) {
 }
 
 export async function createBatch(form: FormData) {
-  const userId = currentUserId();
   const ids = form.getAll("salaryRecordId").map(String);
+  if (ids.length === 0) return;
   const total = await prisma.salaryRecord.aggregate({ where: { id: { in: ids } }, _sum: { finalSalary: true } });
   const batch = await prisma.paymentBatch.create({
     data: {
@@ -129,7 +124,6 @@ export async function createBatch(form: FormData) {
       periodEnd: new Date(text(form, "periodEnd") || new Date()),
       totalAmount: total._sum.finalSalary || 0,
       status: "ready_for_payment",
-      preparedByUserId: userId,
       notes: text(form, "notes"),
     },
   });
@@ -138,18 +132,19 @@ export async function createBatch(form: FormData) {
 }
 
 export async function markBatchPaid(form: FormData) {
-  const userId = currentUserId();
-  const id = text(form, "batchId")!;
-  await prisma.paymentBatch.update({ where: { id }, data: { status: "paid", sentByUserId: userId, sentAt: new Date() } });
+  const id = text(form, "batchId");
+  if (!id) return;
+  await prisma.paymentBatch.update({ where: { id }, data: { status: "paid", sentAt: new Date() } });
   await prisma.salaryRecord.updateMany({ where: { paymentBatchId: id }, data: { paymentStatus: "sent" } });
   revalidatePath("/salaries");
 }
 
 export async function saveFeedback(form: FormData) {
-  const userId = currentUserId();
+  const teamMemberId = text(form, "teamMemberId");
+  if (!teamMemberId) return;
   await prisma.feedback.create({
     data: {
-      teamMemberId: text(form, "teamMemberId")!,
+      teamMemberId,
       eventId: text(form, "eventId"),
       periodLabel: text(form, "periodLabel"),
       feedbackType: (text(form, "feedbackType") || "event_feedback") as never,
@@ -159,31 +154,29 @@ export async function saveFeedback(form: FormData) {
       trainingNeeded: form.get("trainingNeeded") === "on",
       promotionReady: form.get("promotionReady") === "on",
       recommendedRole: text(form, "recommendedRole") as never,
-      preparedByUserId: userId,
     },
   });
   revalidatePath("/feedback");
 }
 
 export async function saveWarning(form: FormData) {
-  const userId = currentUserId();
+  const teamMemberId = text(form, "teamMemberId");
+  if (!teamMemberId) return;
   await prisma.warningNote.create({
     data: {
-      teamMemberId: text(form, "teamMemberId")!,
+      teamMemberId,
       eventId: text(form, "eventId"),
       noteType: (text(form, "noteType") || "warning") as never,
       title: text(form, "title") || "Warning",
       description: text(form, "description") || "-",
       actionRequired: text(form, "actionRequired"),
       dueDate: text(form, "dueDate") ? new Date(text(form, "dueDate")!) : undefined,
-      createdByUserId: userId,
     },
   });
   revalidatePath("/warnings");
 }
 
 export async function saveRate(form: FormData) {
-  currentUserId();
   await prisma.rateSetting.upsert({
     where: {
       eventType_role_isActive: {

@@ -25,13 +25,13 @@ export default function TeamClient() {
   async function load() {
     setLoading(true);
     const res = await fetch(`/api/team?search=${encodeURIComponent(search)}`);
-    setMembers(await res.json());
+    setMembers(res.ok ? await res.json() : []);
     setLoading(false);
   }
 
   useEffect(() => {
     fetch("/api/team")
-      .then((res) => res.json())
+      .then((res) => res.ok ? res.json() : [])
       .then(setMembers)
       .finally(() => setLoading(false));
   }, []);
@@ -41,8 +41,10 @@ export default function TeamClient() {
     body.arSupport = form.get("arSupport") === "on" ? "true" : "";
     body.vrSupport = form.get("vrSupport") === "on" ? "true" : "";
     body.languages = String(form.get("languages") || "").split(",").map((x) => x.trim()).filter(Boolean).join(",");
-    await fetch("/api/team", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...body, languages: String(body.languages).split(",").filter(Boolean) }) });
+    const res = await fetch("/api/team", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...body, languages: String(body.languages).split(",").filter(Boolean) }) });
+    if (!res.ok) return false;
     await load();
+    return true;
   }
 
   return (
@@ -56,7 +58,7 @@ export default function TeamClient() {
           <table>
             <thead><tr><th>Name</th><th>GMind ID</th><th>Phone</th><th>Status</th><th>Role</th><th>AR/VR</th><th>Events</th><th>Warnings</th></tr></thead>
             <tbody>
-              {loading ? <tr><td colSpan={8}>Loading...</td></tr> : members.map((m) => (
+              {loading ? <tr><td colSpan={8}>Loading...</td></tr> : members.length ? members.map((m) => (
                 <tr key={m.id}>
                   <td><strong>{m.fullName}</strong><br /><span className="text-muted text-xs">{m.email || "-"}</span></td>
                   <td>{m.gmindId || "-"}</td>
@@ -67,14 +69,14 @@ export default function TeamClient() {
                   <td>{m._count?.attendances || 0}</td>
                   <td>{m._count?.warningNotes || 0}</td>
                 </tr>
-              ))}
+              )) : <tr><td colSpan={8}>No team members found.</td></tr>}
             </tbody>
           </table>
         </div>
       </section>
       <section className="card">
         <div className="card-header"><div className="card-header-left"><h2>Add member</h2><p>Existing GMind IDs are preserved.</p></div></div>
-        <form className="card-body form-grid form-grid-1" onSubmit={async (e) => { e.preventDefault(); await create(new FormData(e.currentTarget)); e.currentTarget.reset(); }}>
+        <form className="card-body form-grid form-grid-1" onSubmit={async (e) => { e.preventDefault(); const form = e.currentTarget; if (await create(new FormData(form))) form.reset(); }}>
           <div className="field"><label>Full name</label><input name="fullName" required /></div>
           <div className="field"><label>GMind ID</label><input name="gmindId" /></div>
           <div className="field"><label>Phone</label><input name="phone" /></div>

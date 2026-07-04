@@ -27,7 +27,7 @@ export default async function EvaluationsPage() {
   return (
     <section className="card">
       <div className="card-header"><div className="card-header-left"><h2>Evaluations</h2><p>Scores are capped at each criterion max and total 25.</p></div></div>
-      <div className="task-list">{attendance.map((a) => (
+      <div className="task-list">{attendance.length ? attendance.map((a) => (
         <form action={saveEvaluation} className="card" key={a.id}>
           <div className="card-header"><div className="card-header-left"><h2>{a.teamMember.fullName}</h2><p>{a.event.eventName}</p></div><button className="btn btn-primary">Save score</button></div>
           <input type="hidden" name="eventId" value={a.eventId} /><input type="hidden" name="teamMemberId" value={a.teamMemberId} />
@@ -38,7 +38,7 @@ export default async function EvaluationsPage() {
             <textarea name="generalNotes" placeholder="General notes" />
           </div>
         </form>
-      ))}</div>
+      )) : <article className="task-card"><span className="task-dot" /><div><strong>No attended assignments yet</strong><span>Mark attendance first, then score the member here.</span></div></article>}</div>
     </section>
   );
 }

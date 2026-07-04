@@ -19,22 +19,24 @@ export default function EventsClient() {
 
   async function load() {
     const res = await fetch(`/api/events?search=${encodeURIComponent(search)}`);
-    setEvents(await res.json());
+    setEvents(res.ok ? await res.json() : []);
   }
 
   useEffect(() => {
     fetch("/api/events")
-      .then((res) => res.json())
+      .then((res) => res.ok ? res.json() : [])
       .then(setEvents);
   }, []);
 
   async function create(form: FormData) {
-    await fetch("/api/events", {
+    const res = await fetch("/api/events", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(Object.fromEntries(form)),
     });
+    if (!res.ok) return false;
     await load();
+    return true;
   }
 
   return (
@@ -47,7 +49,7 @@ export default function EventsClient() {
         <div className="table-wrap">
           <table>
             <thead><tr><th>Event</th><th>Date</th><th>Client</th><th>Type</th><th>Status</th><th>Team</th><th>Attendance</th><th>Scores</th><th>Salaries</th></tr></thead>
-            <tbody>{events.map((e) => (
+            <tbody>{events.length ? events.map((e) => (
               <tr key={e.id}>
                 <td><strong>{e.eventName}</strong><br /><span className="text-muted text-xs">{e.location || "-"}</span></td>
                 <td>{new Date(e.eventDate).toLocaleDateString("en-GB")}</td>
@@ -59,13 +61,13 @@ export default function EventsClient() {
                 <td>{e._count?.evaluations || 0}</td>
                 <td>{e._count?.salaryRecords || 0}</td>
               </tr>
-            ))}</tbody>
+            )) : <tr><td colSpan={9}>No events found.</td></tr>}</tbody>
           </table>
         </div>
       </section>
       <section className="card">
         <div className="card-header"><div className="card-header-left"><h2>Create event</h2><p>Then assign team from the workflow pages.</p></div></div>
-        <form className="card-body form-grid form-grid-1" onSubmit={async (e) => { e.preventDefault(); await create(new FormData(e.currentTarget)); e.currentTarget.reset(); }}>
+        <form className="card-body form-grid form-grid-1" onSubmit={async (e) => { e.preventDefault(); const form = e.currentTarget; if (await create(new FormData(form))) form.reset(); }}>
           <div className="field"><label>Event name</label><input name="eventName" required /></div>
           <div className="field"><label>Client</label><input name="clientName" /></div>
           <div className="field"><label>Date</label><input type="date" name="eventDate" required /></div>

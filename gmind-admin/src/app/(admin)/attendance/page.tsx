@@ -10,24 +10,25 @@ export default async function AttendancePage() {
     prisma.teamMember.findMany({ where: { status: { in: ["active", "trainee"] } }, orderBy: { fullName: "asc" } }),
     prisma.eventAssignment.findMany({ include: { event: true, teamMember: true }, orderBy: { event: { eventDate: "desc" } } }),
   ]).catch(emptyOnDbError([[], [], []] as const));
+  const canAssign = events.length > 0 && members.length > 0;
 
   return (
     <div className="grid-cols-1-2">
       <section className="card">
         <div className="card-header"><div className="card-header-left"><h2>Assign team</h2><p>One row per member per event.</p></div></div>
         <form action={assignMember} className="card-body form-grid form-grid-1">
-          <div className="field"><label>Event</label><select name="eventId">{events.map((e) => <option key={e.id} value={e.id}>{e.eventName}</option>)}</select></div>
-          <div className="field"><label>Member</label><select name="teamMemberId">{members.map((m) => <option key={m.id} value={m.id}>{m.fullName}</option>)}</select></div>
+          <div className="field"><label>Event</label><select name="eventId" required disabled={!events.length}>{events.map((e) => <option key={e.id} value={e.id}>{e.eventName}</option>)}</select></div>
+          <div className="field"><label>Member</label><select name="teamMemberId" required disabled={!members.length}>{members.map((m) => <option key={m.id} value={m.id}>{m.fullName}</option>)}</select></div>
           <div className="field"><label>Role</label><select name="assignedRole"><option value="facilitator">Facilitator</option><option value="animator">Animator</option><option value="coordinator">Coordinator</option><option value="vr_support">VR support</option><option value="ar_support">AR support</option><option value="setup">Setup</option><option value="trainee">Trainee</option></select></div>
           <div className="field"><label>Planned rate</label><input type="number" name="plannedRate" min="0" step="0.01" /></div>
-          <button className="btn btn-green">Assign</button>
+          <button className="btn btn-green" disabled={!canAssign}>{canAssign ? "Assign" : "Add an event and member first"}</button>
         </form>
       </section>
       <section className="card">
         <div className="card-header"><div className="card-header-left"><h2>Attendance</h2><p>Manual marking for assigned members.</p></div></div>
         <div className="table-wrap"><table>
           <thead><tr><th>Event</th><th>Member</th><th>Role</th><th>Status</th><th>Arrival</th><th>Leaving</th><th></th></tr></thead>
-          <tbody>{assignments.map((a) => (
+          <tbody>{assignments.length ? assignments.map((a) => (
             <tr key={a.id}>
               <td>{a.event.eventName}</td><td>{a.teamMember.fullName}</td><td>{a.assignedRole}</td>
               <td colSpan={4}>
@@ -39,7 +40,7 @@ export default async function AttendancePage() {
                 </form>
               </td>
             </tr>
-          ))}</tbody>
+          )) : <tr><td colSpan={7}>No assignments yet.</td></tr>}</tbody>
         </table></div>
       </section>
     </div>
