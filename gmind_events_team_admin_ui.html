@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GMind Events Team Admin</title>
+  <style>
+    @font-face {
+      font-family: "Poppins";
+      src: url("assets/fonts/Poppins-Regular.ttf") format("truetype");
+      font-weight: 400;
+    }
+
+    @font-face {
+      font-family: "Poppins";
+      src: url("assets/fonts/Poppins-Bold.ttf") format("truetype");
+      font-weight: 700;
+    }
+
+    :root {
+      --navy: #080b1f;
+      --purple: #3b3777;
+      --purple-2: #514aa2;
+      --green: #83df54;
+      --green-2: #4fb83d;
+      --bg: #f6f7fb;
+      --surface: #ffffff;
+      --soft: #eef0fb;
+      --line: #dfe3f1;
+      --text: #111827;
+      --muted: #647084;
+      --red: #df3f4f;
+      --amber: #f2a713;
+      --blue: #2f80ed;
+      --shadow: 0 18px 50px rgba(25, 28, 58, .08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Poppins", Arial, sans-serif;
+      letter-spacing: 0;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 278px minmax(0, 1fr);
+    }
+
+    aside {
+      background:
+        radial-gradient(circle at 20% 0%, rgba(131, 223, 84, .18), transparent 30%),
+        linear-gradient(180deg, #141344 0%, #090b21 100%);
+      color: white;
+      padding: 22px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .brand {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 4px 8px 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, .12);
+    }
+
+    .brand-mark {
+      width: 52px;
+      height: 52px;
+      border-radius: 8px;
+      background: white;
+      display: grid;
+      place-items: center;
+      padding: 7px;
+      box-shadow: 0 12px 25px rgba(0, 0, 0, .16);
+    }
+
+    .brand-mark img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .brand strong {
+      display: block;
+      font-size: 17px;
+      line-height: 1.2;
+    }
+
+    .brand span {
+      display: block;
+      color: #bcc5ef;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .nav-label {
+      color: #aab2d8;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin: 4px 10px;
+    }
+
+    nav {
+      display: grid;
+      gap: 5px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .nav-item {
+      width: 100%;
+      height: 42px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: #d6dbf6;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 12px;
+      cursor: pointer;
+      text-align: left;
+      transition: background .18s ease, color .18s ease;
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 255, 255, .08);
+    }
+
+    .nav-item.active {
+      background: rgba(131, 223, 84, .16);
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .nav-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .09);
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex: 0 0 auto;
+    }
+
+    .nav-item.active .nav-icon {
+      background: var(--green);
+      color: var(--navy);
+    }
+
+    .side-summary {
+      margin-top: auto;
+      border: 1px solid rgba(255, 255, 255, .13);
+      border-radius: 8px;
+      padding: 14px;
+      background: rgba(255, 255, 255, .07);
+    }
+
+    .side-summary span {
+      display: block;
+      color: #bcc5ef;
+      font-size: 12px;
+    }
+
+    .side-summary strong {
+      display: block;
+      color: white;
+      font-size: 26px;
+      margin-top: 6px;
+    }
+
+    .side-summary small {
+      color: var(--green);
+      display: block;
+      margin-top: 6px;
+      font-size: 12px;
+    }
+
+    main {
+      padding: 22px;
+      min-width: 0;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .title h1 {
+      margin: 0;
+      color: var(--navy);
+      font-size: 27px;
+      line-height: 1.2;
+    }
+
+    .title p {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .search {
+      min-width: 240px;
+      height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0 12px;
+      background: white;
+      color: var(--text);
+    }
+
+    .btn {
+      height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0 14px;
+      background: white;
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .btn.primary {
+      background: var(--purple);
+      border-color: var(--purple);
+      color: white;
+    }
+
+    .btn.green {
+      background: var(--green);
+      border-color: var(--green);
+      color: var(--navy);
+    }
+
+    .btn.ghost {
+      background: transparent;
+    }
+
+    .panel {
+      display: none;
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      min-width: 0;
+    }
+
+    .kpi {
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi::after {
+      content: "";
+      position: absolute;
+      width: 92px;
+      height: 92px;
+      right: -36px;
+      top: -36px;
+      border-radius: 50%;
+      background: rgba(131, 223, 84, .18);
+    }
+
+    .kpi span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+
+    .kpi strong {
+      font-size: 28px;
+      color: var(--navy);
+      line-height: 1;
+    }
+
+    .kpi small {
+      display: block;
+      margin-top: 9px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .up {
+      color: var(--green-2);
+      font-weight: 700;
+    }
+
+    .down {
+      color: var(--red);
+      font-weight: 700;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(320px, .65fr);
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .grid.equal {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 16px 0;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: 17px;
+      color: var(--navy);
+    }
+
+    .section-head p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 26px;
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--purple);
+      background: var(--soft);
+      white-space: nowrap;
+    }
+
+    .pill.green {
+      color: #225814;
+      background: rgba(131, 223, 84, .22);
+    }
+
+    .pill.red {
+      color: #8b1d2a;
+      background: rgba(223, 63, 79, .12);
+    }
+
+    .pill.amber {
+      color: #7a4b00;
+      background: rgba(242, 167, 19, .16);
+    }
+
+    .pill.blue {
+      color: #1457a8;
+      background: rgba(47, 128, 237, .13);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      padding: 14px 16px 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+      font-size: 13px;
+    }
+
+    th {
+      text-align: left;
+      color: var(--muted);
+      background: #f7f8fd;
+      border-bottom: 1px solid var(--line);
+      padding: 11px 10px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+
+    td {
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .person {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 190px;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--purple), var(--green));
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex: 0 0 auto;
+    }
+
+    .person strong {
+      display: block;
+      font-size: 13px;
+    }
+
+    .person span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 2px;
+    }
+
+    .progress {
+      height: 8px;
+      background: var(--soft);
+      border-radius: 999px;
+      overflow: hidden;
+      width: 100%;
+      min-width: 90px;
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, var(--green), var(--purple-2));
+      border-radius: inherit;
+    }
+
+    .stack {
+      display: grid;
+      gap: 10px;
+      padding: 16px;
+    }
+
+    .task {
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fbfcff;
+    }
+
+    .task-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-top: 5px;
+      background: var(--green);
+      flex: 0 0 auto;
+    }
+
+    .task strong {
+      display: block;
+      font-size: 13px;
+    }
+
+    .task span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    .bars {
+      height: 246px;
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      padding: 20px 16px 28px;
+      position: relative;
+    }
+
+    .bars::before {
+      content: "";
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      bottom: 52px;
+      height: 1px;
+      background: var(--line);
+    }
+
+    .bar-col {
+      flex: 1;
+      display: grid;
+      align-items: end;
+      gap: 8px;
+      height: 100%;
+      position: relative;
+    }
+
+    .bar {
+      border-radius: 8px 8px 0 0;
+      min-height: 18px;
+      background: linear-gradient(180deg, var(--green), #59c742);
+      position: relative;
+    }
+
+    .bar.purple {
+      background: linear-gradient(180deg, var(--purple-2), var(--purple));
+    }
+
+    .bar-label {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      color: var(--text);
+      min-height: 40px;
+      padding: 9px 11px;
+    }
+
+    textarea {
+      min-height: 94px;
+      resize: vertical;
+    }
+
+    .split-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      border-top: 1px solid var(--line);
+      padding: 14px 16px;
+      background: #fbfcff;
+      border-radius: 0 0 8px 8px;
+    }
+
+    .score-list {
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .score-row {
+      display: grid;
+      grid-template-columns: minmax(170px, 1fr) minmax(170px, 220px) 54px;
+      gap: 12px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 11px;
+      background: #fbfcff;
+    }
+
+    .score-row strong {
+      font-size: 13px;
+    }
+
+    .score-row span {
+      color: var(--muted);
+      font-size: 11px;
+      display: block;
+      margin-top: 3px;
+    }
+
+    input[type="range"] {
+      padding: 0;
+      accent-color: var(--purple);
+      min-height: 28px;
+    }
+
+    .score-value {
+      border-radius: 8px;
+      background: var(--soft);
+      color: var(--purple);
+      height: 34px;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .salary-preview {
+      margin: 16px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--purple), #25235d);
+      color: white;
+      padding: 18px;
+    }
+
+    .salary-preview span {
+      color: #dbe1ff;
+      display: block;
+      font-size: 12px;
+    }
+
+    .salary-preview strong {
+      display: block;
+      font-size: 34px;
+      margin-top: 8px;
+    }
+
+    .salary-preview small {
+      display: block;
+      color: var(--green);
+      margin-top: 8px;
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .rate-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fbfcff;
+      display: grid;
+      gap: 10px;
+    }
+
+    .rate-card strong {
+      color: var(--navy);
+    }
+
+    .rate-card span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .empty-state {
+      padding: 22px;
+      border: 1px dashed #c9cfe4;
+      background: #fbfcff;
+      border-radius: 8px;
+      margin: 16px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .empty-state strong {
+      color: var(--navy);
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    @media (max-width: 1100px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        position: static;
+        height: auto;
+      }
+
+      nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .side-summary {
+        display: none;
+      }
+
+      .grid,
+      .grid.equal {
+        grid-template-columns: 1fr;
+      }
+
+      .kpis,
+      .settings-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 720px) {
+      main {
+        padding: 14px;
+      }
+
+      .topbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .top-actions {
+        justify-content: stretch;
+      }
+
+      .search,
+      .btn {
+        width: 100%;
+      }
+
+      nav,
+      .kpis,
+      .form-grid,
+      .settings-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .score-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand">
+        <div class="brand-mark">
+          <img src="gmind_logo_attached_transparent.png" alt="GMind logo" />
+        </div>
+        <div>
+          <strong>Events Admin</strong>
+          <span>GMind internal system</span>
+        </div>
+      </div>
+
+      <div class="nav-label">Workspace</div>
+      <nav aria-label="Main navigation">
+        <button class="nav-item active" data-target="dashboard"><span class="nav-icon">DB</span>Dashboard</button>
+        <button class="nav-item" data-target="team"><span class="nav-icon">TM</span>Team Database</button>
+        <button class="nav-item" data-target="events"><span class="nav-icon">EV</span>Events</button>
+        <button class="nav-item" data-target="attendance"><span class="nav-icon">AT</span>Attendance</button>
+        <button class="nav-item" data-target="evaluation"><span class="nav-icon">SC</span>Evaluations</button>
+        <button class="nav-item" data-target="feedback"><span class="nav-icon">FB</span>Feedback</button>
+        <button class="nav-item" data-target="salaries"><span class="nav-icon">EG</span>Salaries</button>
+        <button class="nav-item" data-target="training"><span class="nav-icon">TR</span>Training</button>
+        <button class="nav-item" data-target="warnings"><span class="nav-icon">WN</span>Warnings</button>
+        <button class="nav-item" data-target="settings"><span class="nav-icon">ST</span>Settings</button>
+      </nav>
+
+      <div class="side-summary">
+        <span>Pending salaries</span>
+        <strong>EGP 13.1K</strong>
+        <small>Ready for finance review</small>
+      </div>
+    </aside>
+
+    <main>
+      <div class="topbar">
+        <div class="title">
+          <h1 id="pageTitle">Dashboard</h1>
+          <p id="pageSubtitle">Live operating view for GMind events team management.</p>
+        </div>
+        <div class="top-actions">
+          <input class="search" type="search" placeholder="Search team, events, IDs..." />
+          <button class="btn">Export</button>
+          <button class="btn green">New Event</button>
+        </div>
+      </div>
+
+      <section class="panel active" id="dashboard">
+        <div class="kpis">
+          <div class="card kpi"><span>Active team</span><strong>106</strong><small><b class="up">+13</b> newcomers this season</small></div>
+          <div class="card kpi"><span>Events this month</span><strong>18</strong><small>7 school, 5 nursery, 6 public</small></div>
+          <div class="card kpi"><span>Pending evaluations</span><strong>24</strong><small><b class="down">Needs action</b> before salaries</small></div>
+          <div class="card kpi"><span>Salary total</span><strong>13.1K</strong><small>Current pending batch</small></div>
+        </div>
+
+        <div class="grid">
+          <div class="card">
+            <div class="section-head">
+              <div>
+                <h2>Monthly Operations</h2>
+                <p>Event volume and salary pressure by month.</p>
+              </div>
+              <span class="pill green">July 2026</span>
+            </div>
+            <div class="bars">
+              <div class="bar-col"><div class="bar" style="height:44%"></div><div class="bar-label">Jan</div></div>
+              <div class="bar-col"><div class="bar purple" style="height:59%"></div><div class="bar-label">Feb</div></div>
+              <div class="bar-col"><div class="bar" style="height:33%"></div><div class="bar-label">Mar</div></div>
+              <div class="bar-col"><div class="bar purple" style="height:71%"></div><div class="bar-label">Apr</div></div>
+              <div class="bar-col"><div class="bar" style="height:52%"></div><div class="bar-label">May</div></div>
+              <div class="bar-col"><div class="bar purple" style="height:86%"></div><div class="bar-label">Jun</div></div>
+              <div class="bar-col"><div class="bar" style="height:68%"></div><div class="bar-label">Jul</div></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="section-head">
+              <div>
+                <h2>Action Queue</h2>
+                <p>Work the Event Manager should finish first.</p>
+              </div>
+            </div>
+            <div class="stack">
+              <div class="task"><span class="task-dot"></span><div><strong>Complete 24 evaluations</strong><span>Saint Joseph, Future Tech, and French Institute events need final scores.</span></div></div>
+              <div class="task"><span class="task-dot" style="background:var(--amber)"></span><div><strong>Review 10 warnings</strong><span>Attendance and focus issues need HR follow-up before next assignment.</span></div></div>
+              <div class="task"><span class="task-dot" style="background:var(--purple)"></span><div><strong>Approve July salary batch</strong><span>Finance can send payments after final salary records are locked.</span></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid equal">
+          <div class="card">
+            <div class="section-head">
+              <div>
+                <h2>Top Performers</h2>
+                <p>Best team members by performance and activity.</p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Member</th><th>Role</th><th>Score</th><th>Events</th><th>Status</th></tr></thead>
+                <tbody>
+                  <tr><td><div class="person"><span class="avatar">AA</span><div><strong>Aliaa Ali</strong><span>GM-EV-2501-002E</span></div></div></td><td>Animator</td><td>98%</td><td>8</td><td><span class="pill green">Promotion ready</span></td></tr>
+                  <tr><td><div class="person"><span class="avatar">YM</span><div><strong>Youmna Sherif</strong><span>GM-EV-2601-041M</span></div></div></td><td>Facilitator</td><td>94%</td><td>9</td><td><span class="pill blue">Reliable</span></td></tr>
+                  <tr><td><div class="person"><span class="avatar">AH</span><div><strong>Aliaa Hussein</strong><span>GM-EV-2501-003F</span></div></div></td><td>Animator</td><td>93%</td><td>9</td><td><span class="pill green">Leader track</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="section-head">
+              <div>
+                <h2>Risk Watch</h2>
+                <p>Repeated feedback themes that need control.</p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Theme</th><th>People</th><th>Trend</th><th>Action</th></tr></thead>
+                <tbody>
+                  <tr><td>Punctuality</td><td>32</td><td><span class="pill amber">High</span></td><td>Warning plan</td></tr>
+                  <tr><td>Kids engagement</td><td>58</td><td><span class="pill blue">Training</span></td><td>Animator workshop</td></tr>
+                  <tr><td>Task focus</td><td>37</td><td><span class="pill amber">Medium</span></td><td>Role briefing</td></tr>
+                  <tr><td>VR/AR handling</td><td>58</td><td><span class="pill green">Core skill</span></td><td>Technical drill</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="team">
+        <div class="card">
+          <div class="section-head">
+            <div>
+              <h2>Team Database</h2>
+              <p>One profile per person with existing GMind IDs, roles, abilities, and readiness.</p>
+            </div>
+            <button class="btn primary">Add Member</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Member</th><th>Type</th><th>Main Role</th><th>Support</th><th>Avg</th><th>Events</th><th>Readiness</th></tr></thead>
+              <tbody>
+                <tr><td><div class="person"><span class="avatar">AF</span><div><strong>Abdelrahman Farid</strong><span>GM-EV-2501-001D</span></div></div></td><td>Internal</td><td>Facilitator</td><td>VR, AR</td><td><div class="progress"><span style="width:91%"></span></div></td><td>11</td><td><span class="pill amber">Focus coaching</span></td></tr>
+                <tr><td><div class="person"><span class="avatar">AH</span><div><strong>Aliaa Hussein</strong><span>GM-EV-2501-003F</span></div></div></td><td>Internal</td><td>Animator</td><td>AR</td><td><div class="progress"><span style="width:93%"></span></div></td><td>9</td><td><span class="pill green">Coordinator path</span></td></tr>
+                <tr><td><div class="person"><span class="avatar">EK</span><div><strong>Eman Khamis</strong><span>GM-EV-2601-008L</span></div></div></td><td>External</td><td>Facilitator</td><td>VR, AR</td><td><div class="progress"><span style="width:67%"></span></div></td><td>5</td><td><span class="pill blue">Needs training</span></td></tr>
+                <tr><td><div class="person"><span class="avatar">MA</span><div><strong>Mariam Adel</strong><span>ID missing</span></div></div></td><td>Newcomer</td><td>Trainee</td><td>Pending</td><td><div class="progress"><span style="width:0%"></span></div></td><td>0</td><td><span class="pill amber">Manual review</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="events">
+        <div class="card">
+          <div class="section-head">
+            <div>
+              <h2>Create / Edit Event</h2>
+              <p>Event records are the base for assignments, attendance, evaluations, and salaries.</p>
+            </div>
+            <span class="pill green">Normalized data</span>
+          </div>
+          <div class="form-grid">
+            <div class="field"><label>Event Name</label><input value="French Institute Alexandria" /></div>
+            <div class="field"><label>Client</label><input value="Institut Francais d'Egypte" /></div>
+            <div class="field"><label>Event Type</label><select><option>School</option><option>Nursery</option><option>Public Event</option><option>Competition</option><option>Training</option></select></div>
+            <div class="field"><label>Date</label><input type="date" value="2026-07-14" /></div>
+            <div class="field"><label>Location</label><input value="Alexandria" /></div>
+            <div class="field"><label>Status</label><select><option>Confirmed</option><option>Planned</option><option>Completed</option><option>Canceled</option></select></div>
+            <div class="field"><label>Expected Kids</label><input type="number" value="80" /></div>
+            <div class="field"><label>Required Team</label><input type="number" value="9" /></div>
+            <div class="field"><label>Event Manager</label><input value="Events Manager" /></div>
+            <div class="field full"><label>Event Notes</label><textarea>French-language community event. Need strong animator, VR support, and one coordinator for parent flow.</textarea></div>
+          </div>
+          <div class="split-actions"><button class="btn">Save Draft</button><button class="btn primary">Confirm Event</button></div>
+        </div>
+      </section>
+
+      <section class="panel" id="attendance">
+        <div class="card">
+          <div class="section-head">
+            <div>
+              <h2>Manual Attendance</h2>
+              <p>Mark attendance after the event before evaluations and salaries.</p>
+            </div>
+            <button class="btn green">Mark All Attended</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Member</th><th>Assigned Role</th><th>Status</th><th>Arrival</th><th>Leaving</th><th>Note</th></tr></thead>
+              <tbody>
+                <tr><td><div class="person"><span class="avatar">AH</span><div><strong>Aliaa Hussein</strong><span>Animator</span></div></div></td><td>Animator</td><td><span class="pill green">Attended</span></td><td>08:45</td><td>15:20</td><td>Led kids station well</td></tr>
+                <tr><td><div class="person"><span class="avatar">AF</span><div><strong>Abdelrahman Farid</strong><span>VR support</span></div></div></td><td>VR Support</td><td><span class="pill amber">Late</span></td><td>09:22</td><td>15:10</td><td>Manual deduction optional</td></tr>
+                <tr><td><div class="person"><span class="avatar">MA</span><div><strong>Mariam Adel</strong><span>Trainee</span></div></div></td><td>Trainee</td><td><span class="pill red">Absent</span></td><td>-</td><td>-</td><td>Excuse not confirmed</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="evaluation">
+        <div class="grid">
+          <div class="card">
+            <div class="section-head">
+              <div>
+                <h2>Event Evaluation</h2>
+                <p>Score out of 25. Performance percentage feeds the salary calculation.</p>
+              </div>
+              <span class="pill blue">Aliaa Hussein</span>
+            </div>
+            <div class="score-list">
+              <div class="score-row"><div><strong>Punctuality and commitment</strong><span>Max 3</span></div><input class="score-input" type="range" min="0" max="3" step=".5" value="3" data-max="3" /><div class="score-value">3</div></div>
+              <div class="score-row"><div><strong>Task focus and responsibility</strong><span>Max 3</span></div><input class="score-input" type="range" min="0" max="3" step=".5" value="2.5" data-max="3" /><div class="score-value">2.5</div></div>
+              <div class="score-row"><div><strong>Kids handling</strong><span>Max 4</span></div><input class="score-input" type="range" min="0" max="4" step=".5" value="3.5" data-max="4" /><div class="score-value">3.5</div></div>
+              <div class="score-row"><div><strong>Energy and engagement</strong><span>Max 3</span></div><input class="score-input" type="range" min="0" max="3" step=".5" value="3" data-max="3" /><div class="score-value">3</div></div>
+              <div class="score-row"><div><strong>Explanation / animator skill</strong><span>Max 3</span></div><input class="score-input" type="range" min="0" max="3" step=".5" value="3" data-max="3" /><div class="score-value">3</div></div>
+              <div class="score-row"><div><strong>VR/AR/game handling</strong><span>Max 3</span></div><input class="score-input" type="range" min="0" max="3" step=".5" value="2.5" data-max="3" /><div class="score-value">2.5</div></div>
+              <div class="score-row"><div><strong>Teamwork</strong><span>Max 2</span></div><input class="score-input" type="range" min="0" max="2" step=".5" value="2" data-max="2" /><div class="score-value">2</div></div>
+              <div class="score-row"><div><strong>Problem solving under pressure</strong><span>Max 2</span></div><input class="score-input" type="range" min="0" max="2" step=".5" value="1.5" data-max="2" /><div class="score-value">1.5</div></div>
+              <div class="score-row"><div><strong>Professionalism</strong><span>Max 1</span></div><input class="score-input" type="range" min="0" max="1" step=".5" value="1" data-max="1" /><div class="score-value">1</div></div>
+              <div class="score-row"><div><strong>Leadership potential</strong><span>Max 1</span></div><input class="score-input" type="range" min="0" max="1" step=".5" value="1" data-max="1" /><div class="score-value">1</div></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="section-head">
+              <div>
+                <h2>Score Result</h2>
+                <p>Live calculation preview.</p>
+              </div>
+            </div>
+            <div class="salary-preview">
+              <span>Total Score</span>
+              <strong><span id="scoreTotal">23.0</span> / 25</strong>
+              <small id="scorePercent">92% performance percentage</small>
+            </div>
+            <div class="form-grid" style="grid-template-columns:1fr">
+              <div class="field"><label>Evaluation Notes</label><textarea>Strong animator performance. Ready to help train new facilitators. Needs more pressure decision practice before coordinator responsibilities.</textarea></div>
+              <div class="field"><label>Recommended Role</label><select><option>Coordinator Candidate</option><option>Animator</option><option>Facilitator</option><option>Needs Training</option></select></div>
+            </div>
+            <div class="split-actions"><button class="btn">Save Draft</button><button class="btn primary">Complete Evaluation</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="feedback">
+        <div class="card">
+          <div class="section-head">
+            <div>
+              <h2>Feedback Builder</h2>
+              <p>Internal notes plus a simple printable PDF export.</p>
+            </div>
+            <button class="btn primary">Export PDF</button>
+          </div>
+          <div class="form-grid">
+            <div class="field"><label>Team Member</label><input value="Abdelrahman Farid" /></div>
+            <div class="field"><label>Period</label><input value="Summer, Fall and Winter Season" /></div>
+            <div class="field"><label>Feedback Type</label><select><option>Period Feedback</option><option>Event Feedback</option><option>Warning Feedback</option><option>Promotion Feedback</option></select></div>
+            <div class="field full"><label>Strengths</label><textarea>Shows great energy during events, handles multiple children during VR experiences, and supports setup from start to end.</textarea></div>
+            <div class="field full"><label>Recommendations</label><textarea>Maintain clearer focus on the assigned role, improve punctuality, and develop more creative engagement during VR experiences.</textarea></div>
+            <div class="field"><label>Training Needed</label><select><option>Yes</option><option>No</option></select></div>
+            <div class="field"><label>Promotion Ready</label><select><option>No</option><option>Yes</option></select></div>
+            <div class="field"><label>Recommended Role</label><select><option>Remain Facilitator</option><option>Animator</option><option>Coordinator Candidate</option></select></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="salaries">
+        <div class="grid">
+          <div class="card">
+            <div class="section-head">
+              <div>
+                <h2>Salary Records</h2>
+                <p>Event rate x performance percentage, with manual bonus and deduction.</p>
+              </div>
+              <button class="btn green">Create Batch</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Member</th><th>Event</th><th>Role</th><th>Base</th><th>Performance</th><th>Final</th><th>Status</th></tr></thead>
+                <tbody>
+                  <tr><td>Aliaa Hussein</td><td>French Institute</td><td>Animator</td><td>EGP 180</td><td>92%</td><td>EGP 165.6</td><td><span class="pill amber">Pending</span></td></tr>
+                  <tr><td>Abdelrahman Farid</td><td>Future Tech</td><td>VR Support</td><td>EGP 150</td><td>91%</td><td>EGP 136.8</td><td><span class="pill green">Ready</span></td></tr>
+                  <tr><td>Shahd Ali</td><td>Saint Joseph</td><td>Coordinator</td><td>Manual</td><td>-</td><td>EGP 700</td><td><span class="pill blue">Coordinator</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="section-head">
+              <div>
+                <h2>Salary Preview</h2>
+                <p>Use current settings for a quick check.</p>
+              </div>
+            </div>
+            <div class="form-grid" style="grid-template-columns:1fr">
+              <div class="field"><label>Event Rate</label><input id="rateInput" type="number" value="150" /></div>
+              <div class="field"><label>Performance %</label><input id="perfInput" type="number" value="88" /></div>
+              <div class="field"><label>Bonus</label><input id="bonusInput" type="number" value="0" /></div>
+              <div class="field"><label>Deduction</label><input id="deductionInput" type="number" value="0" /></div>
+            </div>
+            <div class="salary-preview">
+              <span>Final Salary</span>
+              <strong id="salaryResult">EGP 132</strong>
+              <small>Formula: rate x performance + bonus - deduction</small>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="training">
+        <div class="card">
+          <div class="section-head">
+            <div>
+              <h2>Training Tracker</h2>
+              <p>Track session attendance, activity scores, and retraining needs.</p>
+            </div>
+            <button class="btn primary">New Training</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Session</th><th>Date</th><th>Attendees</th><th>Activity Avg</th><th>Needs Retraining</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>Animator Basics</td><td>2026-07-05</td><td>42</td><td>1.4 / 2</td><td>8</td><td><span class="pill green">Completed</span></td></tr>
+                <tr><td>VR Handling Drill</td><td>2026-07-09</td><td>28</td><td>Pending</td><td>-</td><td><span class="pill blue">Scheduled</span></td></tr>
+                <tr><td>Kids Control Workshop</td><td>2026-07-12</td><td>35</td><td>Pending</td><td>-</td><td><span class="pill amber">Preparing</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="warnings">
+        <div class="card">
+          <div class="section-head">
+            <div>
+              <h2>Warnings and Notes</h2>
+              <p>Control attendance, behavior, performance, and improvement plans.</p>
+            </div>
+            <button class="btn primary">Add Note</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Member</th><th>Type</th><th>Title</th><th>Action</th><th>Due</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>Aliaa Ali</td><td><span class="pill amber">Feedback</span></td><td>Moderate joking during events</td><td>Professionalism coaching</td><td>Jul 10</td><td>Open</td></tr>
+                <tr><td>Farah Hossam</td><td><span class="pill red">Attendance</span></td><td>Punctuality issue</td><td>Meeting with HR</td><td>Jul 07</td><td>Open</td></tr>
+                <tr><td>Aliaa Hussein</td><td><span class="pill green">Improvement</span></td><td>Coordinator track</td><td>Assign assistant lead role</td><td>Jul 14</td><td>Active</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="settings">
+        <div class="card">
+          <div class="section-head">
+            <div>
+              <h2>Rate Settings</h2>
+              <p>Admins can update rates and formulas without changing historical records.</p>
+            </div>
+            <button class="btn primary">Save Settings</button>
+          </div>
+          <div class="settings-grid">
+            <div class="rate-card"><strong>Nursery Facilitator</strong><span>Rate x performance</span><input type="number" value="100" /></div>
+            <div class="rate-card"><strong>School Facilitator</strong><span>Rate x performance</span><input type="number" value="150" /></div>
+            <div class="rate-card"><strong>School Animator</strong><span>Rate x performance</span><input type="number" value="180" /></div>
+            <div class="rate-card"><strong>Coordinator School</strong><span>Fixed or manual</span><input type="number" value="700" /></div>
+            <div class="rate-card"><strong>Public Event</strong><span>Manual default</span><input type="number" value="250" /></div>
+            <div class="rate-card"><strong>Score Max</strong><span>Evaluation total</span><input type="number" value="25" /></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <div class="section-head">
+            <div>
+              <h2>Import Center</h2>
+              <p>Current files can be cleaned and imported into normalized tables.</p>
+            </div>
+          </div>
+          <div class="empty-state">
+            <strong>Supported imports</strong>
+            Team Database Excel, Events HR Excel, feedback PDF extraction, and salary history.
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const navItems = document.querySelectorAll(".nav-item");
+    const panels = document.querySelectorAll(".panel");
+    const pageTitle = document.getElementById("pageTitle");
+    const pageSubtitle = document.getElementById("pageSubtitle");
+
+    const copy = {
+      dashboard: ["Dashboard", "Live operating view for GMind events team management."],
+      team: ["Team Database", "Profiles, IDs, roles, support abilities, feedback, and readiness."],
+      events: ["Events", "Create events, assign the team, and prepare the operating workflow."],
+      attendance: ["Attendance", "Manual attendance records connected to events and salaries."],
+      evaluation: ["Evaluations", "Score each team member after every event."],
+      feedback: ["Feedback", "Build internal notes and export simple personal feedback PDFs."],
+      salaries: ["Salaries", "Calculate event payments and prepare finance batches."],
+      training: ["Training", "Track onboarding, animator sessions, and retraining needs."],
+      warnings: ["Warnings", "Manage behavior, attendance, and improvement notes."],
+      settings: ["Settings", "Editable rates, formulas, score criteria, and import rules."]
+    };
+
+    navItems.forEach((item) => {
+      item.addEventListener("click", () => {
+        const target = item.dataset.target;
+        navItems.forEach((nav) => nav.classList.remove("active"));
+        panels.forEach((panel) => panel.classList.remove("active"));
+        item.classList.add("active");
+        document.getElementById(target).classList.add("active");
+        pageTitle.textContent = copy[target][0];
+        pageSubtitle.textContent = copy[target][1];
+      });
+    });
+
+    function updateScore() {
+      const inputs = document.querySelectorAll(".score-input");
+      let total = 0;
+      inputs.forEach((input) => {
+        const value = Number(input.value);
+        total += value;
+        input.parentElement.querySelector(".score-value").textContent = value.toString();
+      });
+      const percent = Math.round((total / 25) * 100);
+      document.getElementById("scoreTotal").textContent = total.toFixed(1);
+      document.getElementById("scorePercent").textContent = `${percent}% performance percentage`;
+    }
+
+    document.querySelectorAll(".score-input").forEach((input) => {
+      input.addEventListener("input", updateScore);
+    });
+
+    function updateSalary() {
+      const rate = Number(document.getElementById("rateInput").value || 0);
+      const perf = Number(document.getElementById("perfInput").value || 0);
+      const bonus = Number(document.getElementById("bonusInput").value || 0);
+      const deduction = Number(document.getElementById("deductionInput").value || 0);
+      const finalSalary = rate * (perf / 100) + bonus - deduction;
+      document.getElementById("salaryResult").textContent = `EGP ${finalSalary.toFixed(1)}`;
+    }
+
+    ["rateInput", "perfInput", "bonusInput", "deductionInput"].forEach((id) => {
+      document.getElementById(id).addEventListener("input", updateSalary);
+    });
+
+    updateScore();
+    updateSalary();
+  </script>
+</body>
+</html>

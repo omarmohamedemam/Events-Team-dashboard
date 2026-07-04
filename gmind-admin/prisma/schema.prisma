@@ -1,0 +1,453 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Users (admin accounts) ───────────────────────────────────────────────────
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(event_manager)
+  status       Status   @default(active)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  markedAttendance  Attendance[]   @relation("MarkedBy")
+  createdEvaluations Evaluation[]  @relation("EvaluatedBy")
+  preparedFeedback  Feedback[]     @relation("PreparedBy")
+  approvedFeedback  Feedback[]     @relation("ApprovedBy")
+  createdWarnings   WarningNote[]  @relation("CreatedBy")
+  preparedBatches   PaymentBatch[] @relation("PreparedBy")
+  approvedBatches   PaymentBatch[] @relation("ApprovedBy")
+  sentBatches       PaymentBatch[] @relation("SentBy")
+}
+
+// ─── Team Members ─────────────────────────────────────────────────────────────
+model TeamMember {
+  id                  String      @id @default(cuid())
+  gmindId             String?     @unique
+  fullName            String
+  phone               String?
+  email               String?
+  dateOfBirth         DateTime?
+  schoolOrFaculty     SchoolType  @default(unknown)
+  schoolOrFacultyName String?
+  nationality         String?
+  governorate         String?
+  address             String?
+  socialMediaLink     String?
+  personalPhotoUrl    String?
+  teamType            TeamType    @default(internal)
+  mainRole            MemberRole  @default(facilitator)
+  status              MemberStatus @default(active)
+  arSupport           Boolean     @default(false)
+  vrSupport           Boolean     @default(false)
+  languages           String[]    @default([])
+  startDate           DateTime?
+  notes               String?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  assignments        EventAssignment[]
+  attendances        Attendance[]
+  evaluations        Evaluation[]
+  feedbacks          Feedback[]
+  warningNotes       WarningNote[]
+  salaryRecords      SalaryRecord[]
+  trainingAttendances TrainingAttendance[]
+}
+
+// ─── Events ───────────────────────────────────────────────────────────────────
+model Event {
+  id                String      @id @default(cuid())
+  eventName         String
+  clientName        String?
+  eventType         EventType   @default(school)
+  eventDate         DateTime
+  location          String?
+  expectedKids      Int?
+  actualKids        Int?
+  requiredTeamCount Int?
+  eventManagerId    String?
+  status            EventStatus @default(planned)
+  notes             String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  assignments   EventAssignment[]
+  attendances   Attendance[]
+  evaluations   Evaluation[]
+  feedbacks     Feedback[]
+  salaryRecords SalaryRecord[]
+  warningNotes  WarningNote[]
+}
+
+// ─── Event Assignments ────────────────────────────────────────────────────────
+model EventAssignment {
+  id               String           @id @default(cuid())
+  eventId          String
+  teamMemberId     String
+  assignedRole     AssignedRole     @default(facilitator)
+  plannedRate      Float?
+  assignmentStatus AssignmentStatus @default(assigned)
+  notes            String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  event      Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  teamMember TeamMember @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, teamMemberId])
+}
+
+// ─── Attendance ───────────────────────────────────────────────────────────────
+model Attendance {
+  id               String           @id @default(cuid())
+  eventId          String
+  teamMemberId     String
+  attendanceStatus AttendanceStatus @default(attended)
+  arrivalTime      String?
+  leavingTime      String?
+  attendanceNote   String?
+  markedByUserId   String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  event      Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  teamMember TeamMember @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
+  markedBy   User?      @relation("MarkedBy", fields: [markedByUserId], references: [id])
+
+  @@unique([eventId, teamMemberId])
+}
+
+// ─── Evaluations ──────────────────────────────────────────────────────────────
+model Evaluation {
+  id                        String   @id @default(cuid())
+  eventId                   String
+  teamMemberId              String
+  evaluatorUserId           String?
+  punctualityCommitment     Float    @default(0)
+  taskFocusResponsibility   Float    @default(0)
+  kidsHandling              Float    @default(0)
+  energyEngagement          Float    @default(0)
+  explanationAnimatorSkill  Float    @default(0)
+  vrArGameHandling          Float    @default(0)
+  teamwork                  Float    @default(0)
+  problemSolvingPressure    Float    @default(0)
+  professionalism           Float    @default(0)
+  leadershipPotential       Float    @default(0)
+  totalScore                Float    @default(0)
+  scoreMax                  Float    @default(25)
+  performancePercentage     Float    @default(0)
+  generalNotes              String?
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  event      Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  teamMember TeamMember @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
+  evaluator  User?      @relation("EvaluatedBy", fields: [evaluatorUserId], references: [id])
+
+  @@unique([eventId, teamMemberId])
+}
+
+// ─── Feedback ─────────────────────────────────────────────────────────────────
+model Feedback {
+  id                String       @id @default(cuid())
+  teamMemberId      String
+  eventId           String?
+  periodLabel       String?
+  feedbackType      FeedbackType @default(event_feedback)
+  strengths         String
+  gaps              String?
+  recommendations   String
+  trainingNeeded    Boolean      @default(false)
+  promotionReady    Boolean      @default(false)
+  recommendedRole   MemberRole?
+  preparedByUserId  String?
+  approvedByUserId  String?
+  exportPdfUrl      String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  teamMember  TeamMember @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
+  event       Event?     @relation(fields: [eventId], references: [id])
+  preparedBy  User?      @relation("PreparedBy", fields: [preparedByUserId], references: [id])
+  approvedBy  User?      @relation("ApprovedBy", fields: [approvedByUserId], references: [id])
+}
+
+// ─── Warnings & Notes ─────────────────────────────────────────────────────────
+model WarningNote {
+  id               String      @id @default(cuid())
+  teamMemberId     String
+  eventId          String?
+  noteType         NoteType    @default(feedback)
+  title            String
+  description      String
+  actionRequired   String?
+  dueDate          DateTime?
+  status           NoteStatus  @default(open)
+  createdByUserId  String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  teamMember TeamMember @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
+  event      Event?     @relation(fields: [eventId], references: [id])
+  createdBy  User?      @relation("CreatedBy", fields: [createdByUserId], references: [id])
+}
+
+// ─── Rate Settings ────────────────────────────────────────────────────────────
+model RateSetting {
+  id                  String          @id @default(cuid())
+  eventType           EventType
+  role                AssignedRole
+  baseRate            Float
+  salaryFormulaType   SalaryFormula   @default(rate_x_percentage)
+  scoreMax            Float           @default(25)
+  activeFrom          DateTime?
+  activeTo            DateTime?
+  isActive            Boolean         @default(true)
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  @@unique([eventType, role, isActive])
+}
+
+// ─── Salary Records ───────────────────────────────────────────────────────────
+model SalaryRecord {
+  id                    String        @id @default(cuid())
+  eventId               String
+  teamMemberId          String
+  role                  AssignedRole
+  eventType             EventType
+  baseRate              Float
+  performancePercentage Float         @default(0)
+  calculatedSalary      Float         @default(0)
+  bonus                 Float         @default(0)
+  deduction             Float         @default(0)
+  finalSalary           Float         @default(0)
+  paymentStatus         PaymentStatus @default(pending)
+  paymentMethod         PaymentMethod @default(cash)
+  financialNote         String?
+  paymentBatchId        String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  event        Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  teamMember   TeamMember   @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
+  paymentBatch PaymentBatch? @relation(fields: [paymentBatchId], references: [id])
+
+  @@unique([eventId, teamMemberId])
+}
+
+// ─── Payment Batches ──────────────────────────────────────────────────────────
+model PaymentBatch {
+  id                String      @id @default(cuid())
+  batchName         String
+  periodStart       DateTime
+  periodEnd         DateTime
+  totalAmount       Float       @default(0)
+  status            BatchStatus @default(draft)
+  preparedByUserId  String?
+  approvedByUserId  String?
+  sentByUserId      String?
+  sentAt            DateTime?
+  notes             String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  salaryRecords SalaryRecord[]
+  preparedBy    User?          @relation("PreparedBy", fields: [preparedByUserId], references: [id])
+  approvedBy    User?          @relation("ApprovedBy", fields: [approvedByUserId], references: [id])
+  sentBy        User?          @relation("SentBy", fields: [sentByUserId], references: [id])
+}
+
+// ─── Training Sessions ────────────────────────────────────────────────────────
+model TrainingSession {
+  id          String      @id @default(cuid())
+  sessionName String
+  sessionDate DateTime
+  trainerName String?
+  topic       String?
+  sessionType SessionType @default(offline)
+  notes       String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  attendances TrainingAttendance[]
+}
+
+// ─── Training Attendance ──────────────────────────────────────────────────────
+model TrainingAttendance {
+  id                String              @id @default(cuid())
+  trainingSessionId String
+  teamMemberId      String
+  attendanceStatus  TrainingAttStatus   @default(attended)
+  activityScore     Float?
+  passed            Boolean?
+  notes             String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  trainingSession TrainingSession @relation(fields: [trainingSessionId], references: [id], onDelete: Cascade)
+  teamMember      TeamMember      @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
+
+  @@unique([trainingSessionId, teamMemberId])
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+enum UserRole {
+  event_manager
+  events_hr
+  ceo
+  financial_manager
+}
+
+enum Status {
+  active
+  inactive
+}
+
+enum SchoolType {
+  school
+  faculty
+  other
+  unknown
+}
+
+enum TeamType {
+  internal
+  newcomer
+  external
+  coordinator
+}
+
+enum MemberRole {
+  facilitator
+  animator
+  coordinator
+  event_manager_candidate
+  trainee
+}
+
+enum MemberStatus {
+  active
+  inactive
+  trainee
+  rejected
+  on_hold
+}
+
+enum EventType {
+  nursery
+  school
+  public_event
+  competition
+  training
+  online
+  custom
+}
+
+enum EventStatus {
+  planned
+  confirmed
+  completed
+  canceled
+}
+
+enum AssignedRole {
+  facilitator
+  animator
+  coordinator
+  vr_support
+  ar_support
+  setup
+  media_support
+  trainee
+}
+
+enum AssignmentStatus {
+  assigned
+  confirmed
+  replaced
+  canceled
+}
+
+enum AttendanceStatus {
+  attended
+  absent
+  late
+  left_early
+  excused
+}
+
+enum FeedbackType {
+  event_feedback
+  period_feedback
+  warning_feedback
+  promotion_feedback
+}
+
+enum NoteType {
+  feedback
+  warning
+  serious_warning
+  no_show
+  behavior_issue
+  attendance_issue
+  performance_issue
+  improvement_plan
+}
+
+enum NoteStatus {
+  open
+  resolved
+  ignored
+}
+
+enum SalaryFormula {
+  rate_x_percentage
+  fixed_rate
+  manual
+}
+
+enum PaymentStatus {
+  pending
+  sent
+  canceled
+}
+
+enum PaymentMethod {
+  cash
+  instapay
+  bank_transfer
+  wallet
+  other
+}
+
+enum BatchStatus {
+  draft
+  ready_for_payment
+  partially_paid
+  paid
+  canceled
+}
+
+enum SessionType {
+  online
+  offline
+  mixed
+}
+
+enum TrainingAttStatus {
+  attended
+  absent
+  late
+  excused
+}
