@@ -1,7 +1,6 @@
 "use client";
 
-import { signOut } from "next-auth/react";
-import { getInitials } from "@/lib/utils";
+import { usePathname } from "next/navigation";
 
 const pageTitles: Record<string, { title: string; sub: string }> = {
   "/dashboard": { title: "Dashboard", sub: "Live operating view for GMind events team management." },
@@ -16,13 +15,8 @@ const pageTitles: Record<string, { title: string; sub: string }> = {
   "/settings": { title: "Settings", sub: "Editable rates, formulas, score criteria, and import rules." },
 };
 
-interface TopbarProps {
-  user?: { name?: string | null; email?: string | null };
-}
-
-export default function Topbar({ user }: TopbarProps) {
-  // Get pathname client-side
-  const pathname = typeof window !== "undefined" ? window.location.pathname : "/dashboard";
+export default function Topbar() {
+  const pathname = usePathname();
   const matched = Object.entries(pageTitles).find(([key]) => pathname.startsWith(key));
   const page = matched?.[1] ?? { title: "GMind Admin", sub: "" };
 
@@ -40,14 +34,13 @@ export default function Topbar({ user }: TopbarProps) {
           placeholder="Search team, events, IDs..."
         />
 
-        <div className="user-chip" onClick={() => signOut({ callbackUrl: "/login" })}>
+        <div className="user-chip">
           <span className="avatar avatar-sm">
-            {user?.name ? getInitials(user.name) : "AD"}
+            GA
           </span>
           <span className="truncate" style={{ maxWidth: 120 }}>
-            {user?.name ?? "Admin"}
+            GMind Admin
           </span>
-          <span className="text-muted text-xs">↗</span>
         </div>
       </div>
     </header>

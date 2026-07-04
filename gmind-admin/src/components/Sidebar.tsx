@@ -4,16 +4,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: "DB" },
-  { href: "/team", label: "Team Database", icon: "TM" },
-  { href: "/events", label: "Events", icon: "EV" },
-  { href: "/attendance", label: "Attendance", icon: "AT" },
-  { href: "/evaluations", label: "Evaluations", icon: "SC" },
-  { href: "/feedback", label: "Feedback", icon: "FB" },
-  { href: "/salaries", label: "Salaries", icon: "EG" },
-  { href: "/training", label: "Training", icon: "TR" },
-  { href: "/warnings", label: "Warnings", icon: "WN" },
-  { href: "/settings", label: "Settings", icon: "ST" },
+  { href: "/dashboard", label: "Dashboard", icon: "01" },
+  { href: "/team", label: "Team Database", icon: "02" },
+  { href: "/events", label: "Events", icon: "03" },
+  { href: "/attendance", label: "Attendance", icon: "04" },
+  { href: "/evaluations", label: "Evaluations", icon: "05" },
+  { href: "/feedback", label: "Feedback", icon: "06" },
+  { href: "/salaries", label: "Salaries", icon: "07" },
+  { href: "/training", label: "Training", icon: "08" },
+  { href: "/warnings", label: "Warnings", icon: "09" },
+  { href: "/settings", label: "Settings", icon: "10" },
 ];
 
 export default function Sidebar() {
@@ -23,9 +23,7 @@ export default function Sidebar() {
     <aside className="sidebar">
       <div className="sidebar-inner">
         <div className="sidebar-brand">
-          <div className="brand-logo">
-            <img src="/logo.png" alt="GMind logo" />
-          </div>
+          <div className="brand-logo-text">G</div>
           <div className="brand-text">
             <strong>Events Admin</strong>
             <span>GMind internal system</span>
@@ -53,12 +51,7 @@ export default function Sidebar() {
           })}
         </nav>
 
-        <div className="sidebar-footer">
-          <Link href="/settings" className="nav-link">
-            <span className="nav-icon">⚙</span>
-            Settings
-          </Link>
-        </div>
+        <div className="sidebar-footer" />
       </div>
     </aside>
   );
