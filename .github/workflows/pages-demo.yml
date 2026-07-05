@@ -1,0 +1,37 @@
+name: Publish UI demo
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - gmind_events_team_admin_ui.html
+      - .github/workflows/pages-demo.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - name: Build static demo
+        run: |
+          mkdir -p public-demo
+          cp gmind_events_team_admin_ui.html public-demo/index.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public-demo
+      - id: deployment
+        uses: actions/deploy-pages@v4
